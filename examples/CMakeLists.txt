@@ -1,0 +1,2 @@
+add_executable(hello_barrier hello_barrier.cpp)
+target_link_libraries(hello_barrier PRIVATE cpu_collectives::cpu_collectives)

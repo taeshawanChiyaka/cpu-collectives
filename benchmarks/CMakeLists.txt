@@ -1,0 +1,3 @@
+add_executable(bench_barrier bench_barrier.cpp)
+target_include_directories(bench_barrier PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(bench_barrier PRIVATE cpu_collectives::cpu_collectives)

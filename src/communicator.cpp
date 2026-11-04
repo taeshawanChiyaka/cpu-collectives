@@ -12,7 +12,7 @@ struct cc_communicator {
 };
 
 extern "C" cc_status_t cc_communicator_create(size_t participant_count,
-                                                 cc_communicator_t** out_comm) {
+                                              cc_communicator_t** out_comm) {
     if (out_comm == nullptr) {
         return CC_STATUS_INVALID_ARGUMENT;
     }
@@ -85,19 +85,12 @@ extern "C" cc_status_t cc_all_reduce_sum_f64_with_algorithm(
     using cpu_collectives::internal::AllReduceAlgorithm;
     if (algorithm != CC_ALL_REDUCE_ALGORITHM_BASELINE &&
         algorithm != CC_ALL_REDUCE_ALGORITHM_PARALLEL) {
-        // Invalid selection still needs collective participation to avoid
-        // stranding peers that entered the same collective.
-        algorithm = static_cast<cc_all_reduce_algorithm_t>(-1);
+        return CC_STATUS_INVALID_ARGUMENT;
     }
     const auto internal_algorithm = algorithm == CC_ALL_REDUCE_ALGORITHM_PARALLEL
                                         ? AllReduceAlgorithm::parallel
                                         : AllReduceAlgorithm::baseline;
-    const cc_status_t result = invoke_all_reduce(comm, rank, sendbuf, recvbuf, count,
-                                                 internal_algorithm);
-    if (algorithm == static_cast<cc_all_reduce_algorithm_t>(-1)) {
-        return CC_STATUS_INVALID_ARGUMENT;
-    }
-    return result;
+    return invoke_all_reduce(comm, rank, sendbuf, recvbuf, count, internal_algorithm);
 }
 
 extern "C" void cc_communicator_destroy(cc_communicator_t* comm) {

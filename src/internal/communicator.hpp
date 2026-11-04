@@ -36,8 +36,6 @@ private:
     const std::size_t participant_count_;
     sync::Barrier barrier_;
 
-    // Each participant writes only its own slot. Reduction writes disjoint
-    // result ranges; all output copies happen after the reduction barrier.
     std::vector<std::vector<double>> input_slots_;
     std::vector<double> result_;
     std::size_t collective_count_ = 0;

@@ -10,8 +10,6 @@ CollectiveResult Communicator::all_reduce_sum_f64(std::size_t rank,
                                                    double* recvbuf,
                                                    std::size_t count,
                                                    AllReduceAlgorithm algorithm) {
-    // Rank 0 initializes shared state before participants validate and stage
-    // their input. The first barrier publishes this state to all participants.
     if (rank == 0) {
         allocation_failed_.store(false, std::memory_order_relaxed);
         invalid_argument_.store(false, std::memory_order_relaxed);
@@ -40,8 +38,6 @@ CollectiveResult Communicator::all_reduce_sum_f64(std::size_t rank,
     }
     barrier_.wait();
 
-    // Snapshot the shared outcome before allowing rank 0 to reset it on the
-    // next invocation. The following barrier also keeps participants together.
     const bool invalid = invalid_argument_.load(std::memory_order_relaxed);
     const bool out_of_memory = allocation_failed_.load(std::memory_order_relaxed);
     barrier_.wait();
@@ -62,8 +58,6 @@ CollectiveResult Communicator::all_reduce_sum_f64(std::size_t rank,
             }
         }
     } else {
-        // Divide elements into contiguous, balanced ranges. Every output
-        // element is written by exactly one rank, avoiding a serial rank-0 sum.
         const std::size_t base = count / participant_count_;
         const std::size_t remainder = count % participant_count_;
         const std::size_t begin = rank * base + std::min(rank, remainder);
@@ -82,7 +76,6 @@ CollectiveResult Communicator::all_reduce_sum_f64(std::size_t rank,
     if (count != 0) {
         std::copy_n(result_.begin(), count, recvbuf);
     }
-    // Keep result_ and input_slots_ stable until every rank has finished copying.
     barrier_.wait();
     return CollectiveResult::success;
 }

@@ -1,6 +1,6 @@
 # cpu-collectives
 
-A small, correctness-first CPU collective communication library. The initial prototype provides an in-process communicator for a fixed group of threads, a reusable barrier, and double-precision sum all-reduce. The project explores high-performance CPU collectives, with Apple Silicon as an early optimization target and portable C++ as the baseline.
+A small, correctness-first CPU collective communication library. The initial prototype provides an in-process communicator for a fixed group of threads, a reusable barrier, and double-precision sum all-reduce. The project explores portable CPU collectives with a strong emphasis on correctness, benchmarking, and architecture-aware design.
 
 This is experimental software, not a drop-in replacement for NCCL. No performance claims are made without reproducible benchmarks.
 
@@ -38,6 +38,5 @@ Barrier (participants, iterations):
 ./build/benchmarks/bench_barrier 4 100000
 ```
 
-See [docs/benchmarks.md](docs/benchmarks.md) for output interpretation and measurement guidance. Sanitizers are for correctness checking, not performance measurement.
-
-See [docs/api.md](docs/api.md) for API contracts, [docs/architecture.md](docs/architecture.md) for design boundaries, and [docs/porting.md](docs/porting.md) for platform notes.
+See [docs/benchmarks.md](docs/benchmarks.md) for output interpretation and measurement guidance.
+See [docs/api.md](docs/api.md) for API contracts and [docs/architecture.md](docs/architecture.md) for design boundaries.

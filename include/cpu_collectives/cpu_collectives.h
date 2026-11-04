@@ -17,9 +17,7 @@ typedef enum cc_status {
 } cc_status_t;
 
 typedef enum cc_all_reduce_algorithm {
-    /** Single-threaded reduction on rank 0; simple reference baseline. */
     CC_ALL_REDUCE_ALGORITHM_BASELINE = 0,
-    /** Partition output elements across ranks so reduction work runs in parallel. */
     CC_ALL_REDUCE_ALGORITHM_PARALLEL = 1
 } cc_all_reduce_algorithm_t;
 

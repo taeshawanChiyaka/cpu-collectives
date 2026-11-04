@@ -1,8 +1,16 @@
 # cpu-collectives
 
-A small, correctness-first CPU collective communication library. The initial prototype provides an in-process communicator for a fixed group of threads, a reusable barrier, and double-precision sum all-reduce. The project explores portable CPU collectives with a strong emphasis on correctness, benchmarking, and architecture-aware design.
+A small, correctness-first CPU collective communication library. The initial prototype provides an in-process communicator for a fixed group of threads, a reusable barrier, and double-precision sum all-reduce.
 
 This is experimental software, not a drop-in replacement for NCCL. No performance claims are made without reproducible benchmarks.
+
+## Visual overview
+
+![All-reduce flow](docs/images/all-reduce-flow.svg)
+
+![Reported benchmark latency](docs/images/benchmark-latency.svg)
+
+The benchmark chart shows contributor-reported measurements for a specific machine and workload. See [benchmark results and caveats](docs/benchmark-results.md) before drawing conclusions.
 
 ## Current scope
 
@@ -38,5 +46,4 @@ Barrier (participants, iterations):
 ./build/benchmarks/bench_barrier 4 100000
 ```
 
-See [docs/benchmarks.md](docs/benchmarks.md) for output interpretation and measurement guidance.
-See [docs/api.md](docs/api.md) for API contracts and [docs/architecture.md](docs/architecture.md) for design boundaries.
+See [docs/benchmarks.md](docs/benchmarks.md) for output interpretation and measurement guidance. See [docs/api.md](docs/api.md) for API contracts and [docs/architecture.md](docs/architecture.md) for design boundaries.

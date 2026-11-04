@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
+  <title id="title">cpu-collectives all-reduce flow</title>
+  <desc id="desc">Each rank stages its input into a shared communicator. The baseline sums on rank zero; the parallel algorithm assigns output chunks across ranks. All ranks receive the completed sum.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#182b3d"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#57d6c7"/><stop offset="1" stop-color="#7ba7ff"/></linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#8ca8c2"/></marker>
+    <style>
+      text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#edf4fb}.muted{fill:#a8bbce}.tiny{font-size:14px}.small{font-size:16px}.label{font-size:18px;font-weight:650}.heading{font-size:25px;font-weight:750}.card{fill:#20364a;stroke:#37536c;stroke-width:1.5}.line{stroke:#8ca8c2;stroke-width:2;fill:none;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1200" height="560" rx="24" fill="url(#bg)"/>
+  <text x="52" y="58" class="heading">Inside an all-reduce</text>
+  <text x="52" y="87" class="small muted">Fixed group of threads · one process · f64 sum</text>
+  <text x="52" y="137" class="label">1 · Each rank provides its input</text>
+  <g>
+    <rect x="55" y="160" width="205" height="62" rx="12" class="card"/><text x="76" y="187" class="label">Rank 0</text><text x="76" y="210" class="tiny muted">input vector x₀</text>
+    <rect x="55" y="238" width="205" height="62" rx="12" class="card"/><text x="76" y="265" class="label">Rank 1</text><text x="76" y="288" class="tiny muted">input vector x₁</text>
+    <rect x="55" y="316" width="205" height="62" rx="12" class="card"/><text x="76" y="343" class="label">Rank 2</text><text x="76" y="366" class="tiny muted">input vector x₂</text>
+    <rect x="55" y="394" width="205" height="62" rx="12" class="card"/><text x="76" y="421" class="label">Rank N−1</text><text x="76" y="444" class="tiny muted">input vector xₙ₋₁</text>
+  </g>
+  <path d="M260 191C300 191 295 300 340 300M260 269C300 269 300 300 340 300M260 347C300 347 300 300 340 300M260 425C300 425 295 300 340 300" class="line"/>
+  <rect x="345" y="244" width="195" height="112" rx="18" fill="#163f4b" stroke="#57d6c7" stroke-width="2"/>
+  <text x="368" y="281" class="label">Communicator</text><text x="368" y="309" class="small muted">stage rank inputs</text><text x="368" y="334" class="tiny muted">synchronize participants</text>
+  <path d="M540 300H590" class="line"/>
+  <text x="600" y="137" class="label">2 · Choose a reduction strategy</text>
+  <rect x="600" y="160" width="250" height="126" rx="16" class="card"/>
+  <text x="622" y="192" class="label">Baseline</text><text x="622" y="221" class="small muted">Rank 0 sums all elements</text><text x="622" y="247" class="tiny muted">simple reference path</text><text x="622" y="270" class="tiny" fill="#57d6c7">explicit API option</text>
+  <rect x="600" y="310" width="250" height="146" rx="16" class="card"/>
+  <text x="622" y="342" class="label">Parallel chunks</text><text x="622" y="369" class="small muted">Ranks sum disjoint ranges</text>
+  <rect x="622" y="389" width="47" height="24" rx="5" fill="#57d6c7"/><rect x="676" y="389" width="47" height="24" rx="5" fill="#81c7dc"/><rect x="730" y="389" width="47" height="24" rx="5" fill="#829fff"/><rect x="784" y="389" width="42" height="24" rx="5" fill="#a99cf4"/>
+  <text x="622" y="438" class="tiny muted">chunks combine into one result</text>
+  <path d="M850 222C886 222 882 300 917 300M850 383C886 383 882 300 917 300" class="line"/>
+  <rect x="922" y="244" width="225" height="112" rx="18" fill="#163f4b" stroke="#7ba7ff" stroke-width="2"/>
+  <text x="944" y="281" class="label">Result vector</text><text x="944" y="309" class="small muted">y = Σ xᵣ</text><text x="944" y="334" class="tiny muted">copied to every rank</text>
+  <path d="M1034 356V488H158V461M1034 488H158M1034 488H158" stroke="#50708b" stroke-width="1.5" fill="none" stroke-dasharray="5 6"/>
+  <text x="52" y="522" class="tiny muted">All ranks must call collectives in the same order. Algorithm selection is explicit; no automatic crossover is implied.</text>
+</svg>

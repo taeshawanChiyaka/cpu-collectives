@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="670" viewBox="0 0 1200 670" role="img" aria-labelledby="title desc">
+  <title id="title">Reported all-reduce benchmark latency</title>
+  <desc id="desc">Median microseconds per collective from nine user-reported trials. Parallel is slower for small payloads and faster for the largest payloads in these runs. Measurements are specific to one MacBook and workload.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#101827"/><stop offset="1" stop-color="#182b3d"/></linearGradient>
+    <style>
+      text{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;fill:#edf4fb}.muted{fill:#a8bbce}.title{font-size:27px;font-weight:750}.sub{font-size:15px}.group{font-size:19px;font-weight:700}.row{font-size:14px}.value{font-size:13px;font-weight:650}.axis{stroke:#476078;stroke-width:1}.base{fill:#8298ad}.parallel{fill:#57d6c7}.legend{font-size:14px}
+    </style>
+  </defs>
+  <rect width="1200" height="670" rx="24" fill="url(#bg)"/>
+  <text x="54" y="56" class="title">All-reduce latency · reported MacBook runs</text>
+  <text x="54" y="84" class="sub muted">Median of 9 trials · lower is better · microseconds per collective</text>
+  <rect x="830" y="105" width="16" height="16" rx="4" class="base"/><text x="854" y="118" class="legend">Baseline</text><rect x="956" y="105" width="16" height="16" rx="4" class="parallel"/><text x="980" y="118" class="legend">Parallel</text>
+  <text x="54" y="145" class="group">4 participants</text>
+  <g class="row muted">
+    <text x="56" y="181">8,192 elements · 64 KiB</text><text x="56" y="231">16,384 elements · 128 KiB</text><text x="56" y="281">32,768 elements · 256 KiB</text><text x="56" y="331">131,072 elements · 1 MiB</text>
+  </g>
+  <g>
+    <rect x="320" y="164" width="90" height="13" rx="6" class="base"/><text x="417" y="175" class="value">36.06</text><rect x="320" y="181" width="108" height="13" rx="6" class="parallel"/><text x="435" y="192" class="value">43.30</text>
+    <rect x="320" y="214" width="135" height="13" rx="6" class="base"/><text x="462" y="225" class="value">54.20</text><rect x="320" y="231" width="142" height="13" rx="6" class="parallel"/><text x="469" y="242" class="value">56.90</text>
+    <rect x="320" y="264" width="208" height="13" rx="6" class="base"/><text x="535" y="275" class="value">83.44</text><rect x="320" y="281" width="177" height="13" rx="6" class="parallel"/><text x="504" y="292" class="value">71.06</text>
+    <rect x="320" y="314" width="734" height="13" rx="6" class="base"/><text x="1061" y="325" class="value">294.19</text><rect x="320" y="331" width="603" height="13" rx="6" class="parallel"/><text x="930" y="342" class="value">241.80</text>
+  </g>
+  <line x1="320" y1="355" x2="1080" y2="355" class="axis"/><text x="316" y="374" class="tiny muted">0</text><text x="676" y="374" class="tiny muted">150</text><text x="1044" y="374" class="tiny muted">300 µs</text>
+  <text x="54" y="413" class="group">8 participants</text>
+  <g class="row muted">
+    <text x="56" y="449">8,192 elements · 64 KiB</text><text x="56" y="499">16,384 elements · 128 KiB</text><text x="56" y="549">32,768 elements · 256 KiB</text><text x="56" y="599">131,072 elements · 1 MiB</text>
+  </g>
+  <g>
+    <rect x="320" y="432" width="266" height="13" rx="6" class="base"/><text x="593" y="443" class="value">100.60</text><rect x="320" y="449" width="282" height="13" rx="6" class="parallel"/><text x="609" y="460" class="value">106.59</text>
+    <rect x="320" y="482" width="344" height="13" rx="6" class="base"/><text x="671" y="493" class="value">130.02</text><rect x="320" y="499" width="353" height="13" rx="6" class="parallel"/><text x="680" y="510" class="value">133.49</text>
+    <rect x="320" y="532" width="497" height="13" rx="6" class="base"/><text x="824" y="543" class="value">187.97</text><rect x="320" y="549" width="482" height="13" rx="6" class="parallel"/><text x="809" y="560" class="value">182.38</text>
+    <rect x="320" y="582" width="1200" height="13" rx="6" class="base"/><text x="0" y="0" visibility="hidden">bar clipped at chart edge</text>
+    <rect x="320" y="582" width="760" height="13" rx="6" class="base"/><text x="1087" y="593" class="value">660.15</text><rect x="320" y="599" width="635" height="13" rx="6" class="parallel"/><text x="962" y="610" class="value">551.30</text>
+  </g>
+  <text x="54" y="643" class="sub muted">Illustrative only: exact CPU/OS/compiler/load details were not captured. See docs/benchmark-results.md for methodology and caveats.</text>
+</svg>

@@ -11,6 +11,7 @@ include(cmake/cc_sanitizers.cmake)
 add_library(cpu_collectives
     src/cc_status.cpp
     src/communicator.cpp
+    src/internal/communicator.cpp
     src/sync/barrier.cpp
 )
 add_library(cpu_collectives::cpu_collectives ALIAS cpu_collectives)

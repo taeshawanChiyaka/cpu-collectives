@@ -13,20 +13,17 @@
 namespace {
 
 bool parse_positive(const char* text, std::size_t& value) {
-    if (text == nullptr || *text == '\0' || *text == '-') {
-        return false;
-    }
+    if (text == nullptr || *text == '\0' || *text == '-') return false;
     char* end = nullptr;
     const unsigned long long parsed = std::strtoull(text, &end, 10);
-    if (*end != '\0' || parsed == 0 || parsed > static_cast<unsigned long long>(SIZE_MAX)) {
-        return false;
-    }
+    if (*end != '\0' || parsed == 0 || parsed > static_cast<unsigned long long>(SIZE_MAX)) return false;
     value = static_cast<std::size_t>(parsed);
     return true;
 }
 
 int run_trial(std::size_t participants, std::size_t elements, std::size_t iterations,
-              std::size_t trial, cc_communicator_t* comm) {
+              std::size_t trial, cc_all_reduce_algorithm_t algorithm,
+              cc_communicator_t* comm) {
     std::vector<std::vector<double>> inputs(participants, std::vector<double>(elements));
     std::vector<std::vector<double>> outputs(participants, std::vector<double>(elements, 0.0));
     for (std::size_t rank = 0; rank < participants; ++rank) {
@@ -43,19 +40,19 @@ int run_trial(std::size_t participants, std::size_t elements, std::size_t iterat
     for (std::size_t rank = 0; rank < participants; ++rank) {
         workers.emplace_back([&, rank] {
             for (std::size_t i = 0; i < warmup_iterations; ++i) {
-                if (cc_all_reduce_sum_f64(comm, rank, inputs[rank].data(),
-                                          outputs[rank].data(), elements) != CC_STATUS_OK) {
+                if (cc_all_reduce_sum_f64_with_algorithm(
+                        comm, rank, inputs[rank].data(), outputs[rank].data(), elements,
+                        algorithm) != CC_STATUS_OK) {
                     failed.store(true, std::memory_order_relaxed);
                     return;
                 }
             }
             ready.count_down();
-            while (!go.load(std::memory_order_acquire)) {
-                std::this_thread::yield();
-            }
+            while (!go.load(std::memory_order_acquire)) std::this_thread::yield();
             for (std::size_t i = 0; i < iterations; ++i) {
-                if (cc_all_reduce_sum_f64(comm, rank, inputs[rank].data(),
-                                          outputs[rank].data(), elements) != CC_STATUS_OK) {
+                if (cc_all_reduce_sum_f64_with_algorithm(
+                        comm, rank, inputs[rank].data(), outputs[rank].data(), elements,
+                        algorithm) != CC_STATUS_OK) {
                     failed.store(true, std::memory_order_relaxed);
                     return;
                 }
@@ -66,9 +63,7 @@ int run_trial(std::size_t participants, std::size_t elements, std::size_t iterat
     ready.wait();
     const auto start = cc_bench::Clock::now();
     go.store(true, std::memory_order_release);
-    for (auto& worker : workers) {
-        worker.join();
-    }
+    for (auto& worker : workers) worker.join();
     const auto elapsed = cc_bench::Clock::now() - start;
 
     if (failed.load(std::memory_order_relaxed)) {
@@ -90,11 +85,13 @@ int run_trial(std::size_t participants, std::size_t elements, std::size_t iterat
     }
 
     const double seconds = std::chrono::duration<double>(elapsed).count();
-    const double calls = static_cast<double>(iterations);
-    const double average_us = seconds * 1.0e6 / calls;
-    const double per_rank_mib_s = (static_cast<double>(elements) * sizeof(double) * calls /
-                                   seconds) / (1024.0 * 1024.0);
+    const double average_us = seconds * 1.0e6 / static_cast<double>(iterations);
+    const double per_rank_mib_s = (static_cast<double>(elements) * sizeof(double) *
+                                   static_cast<double>(iterations) / seconds) /
+                                  (1024.0 * 1024.0);
     std::cout << "all_reduce_sum_f64"
+              << " algorithm=" << (algorithm == CC_ALL_REDUCE_ALGORITHM_BASELINE
+                                       ? "baseline" : "parallel")
               << " trial=" << trial
               << " participants=" << participants
               << " elements=" << elements
@@ -113,11 +110,7 @@ int main(int argc, char** argv) {
         std::cerr << "usage: bench_all_reduce [participants] [elements] [iterations] [trials]\n";
         return 2;
     }
-
-    std::size_t participants = 2;
-    std::size_t elements = 1024;
-    std::size_t iterations = 1000;
-    std::size_t trials = 5;
+    std::size_t participants = 2, elements = 1024, iterations = 1000, trials = 5;
     if ((argc > 1 && !parse_positive(argv[1], participants)) ||
         (argc > 2 && !parse_positive(argv[2], elements)) ||
         (argc > 3 && !parse_positive(argv[3], iterations)) ||
@@ -133,16 +126,19 @@ int main(int argc, char** argv) {
         std::cerr << "communicator creation failed: " << cc_status_string(status) << '\n';
         return 1;
     }
-
     std::cout << "Benchmark uses " << std::min<std::size_t>(iterations, 100)
               << " warmup collectives per rank; timing excludes thread creation.\n";
+
+    const cc_all_reduce_algorithm_t algorithms[] = {
+        CC_ALL_REDUCE_ALGORITHM_BASELINE, CC_ALL_REDUCE_ALGORITHM_PARALLEL};
     for (std::size_t trial = 1; trial <= trials; ++trial) {
-        if (run_trial(participants, elements, iterations, trial, comm) != 0) {
-            cc_communicator_destroy(comm);
-            return 1;
+        for (const auto algorithm : algorithms) {
+            if (run_trial(participants, elements, iterations, trial, algorithm, comm) != 0) {
+                cc_communicator_destroy(comm);
+                return 1;
+            }
         }
     }
-
     cc_communicator_destroy(comm);
     return 0;
 }

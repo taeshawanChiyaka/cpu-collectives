@@ -14,6 +14,11 @@ enum class CollectiveResult {
     out_of_memory
 };
 
+enum class AllReduceAlgorithm {
+    baseline,
+    parallel
+};
+
 class Communicator {
 public:
     explicit Communicator(std::size_t participant_count)
@@ -24,17 +29,19 @@ public:
     void barrier() { barrier_.wait(); }
 
     CollectiveResult all_reduce_sum_f64(std::size_t rank, const double* sendbuf,
-                                        double* recvbuf, std::size_t count);
+                                        double* recvbuf, std::size_t count,
+                                        AllReduceAlgorithm algorithm);
 
 private:
     const std::size_t participant_count_;
     sync::Barrier barrier_;
 
-    // Each participant writes only its own slot. The result is produced by
-    // rank 0 and read only after the barrier publishes the completed sum.
+    // Each participant writes only its own slot. Reduction writes disjoint
+    // result ranges; all output copies happen after the reduction barrier.
     std::vector<std::vector<double>> input_slots_;
     std::vector<double> result_;
     std::size_t collective_count_ = 0;
+    AllReduceAlgorithm collective_algorithm_ = AllReduceAlgorithm::baseline;
     std::atomic<bool> allocation_failed_{false};
     std::atomic<bool> invalid_argument_{false};
 };

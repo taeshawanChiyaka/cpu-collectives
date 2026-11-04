@@ -16,6 +16,13 @@ typedef enum cc_status {
     CC_STATUS_INTERNAL_ERROR = 3
 } cc_status_t;
 
+typedef enum cc_all_reduce_algorithm {
+    /** Single-threaded reduction on rank 0; simple reference baseline. */
+    CC_ALL_REDUCE_ALGORITHM_BASELINE = 0,
+    /** Partition output elements across ranks so reduction work runs in parallel. */
+    CC_ALL_REDUCE_ALGORITHM_PARALLEL = 1
+} cc_all_reduce_algorithm_t;
+
 /** Return a static description of a status code; do not free the result. */
 const char* cc_status_string(cc_status_t status);
 
@@ -35,20 +42,23 @@ cc_status_t cc_barrier(cc_communicator_t* comm, size_t rank);
 
 /**
  * Sum `count` double values across all communicator participants and write
- * the complete sum to each participant's recvbuf. Every rank must call this
- * operation in the same order with the same count. Ranks must be unique and
- * in range. For count > 0, sendbuf and recvbuf must be non-null; for count == 0
- * they may be null. sendbuf and recvbuf may overlap, including being identical.
- *
- * If a rank-valid participant supplies a null buffer or participants disagree
- * on count, all participants return CC_STATUS_INVALID_ARGUMENT. If scratch
- * allocation fails, all participants return CC_STATUS_OUT_OF_MEMORY. As with
- * all collectives, every participant must enter the operation; a missing or
- * duplicate rank can leave peers waiting.
+ * the complete sum to each participant's recvbuf. This selects the rank-0
+ * baseline algorithm. Every rank must call operations in the same order.
  */
 cc_status_t cc_all_reduce_sum_f64(cc_communicator_t* comm, size_t rank,
                                   const double* sendbuf, double* recvbuf,
                                   size_t count);
+
+/**
+ * All-reduce with an explicit algorithm for comparative benchmarking.
+ * Baseline reduces all elements serially on rank 0. Parallel divides the
+ * output range into contiguous chunks; each rank sums one chunk. The algorithms
+ * have identical buffer, rank, count, synchronization, and overlap requirements
+ * documented for cc_all_reduce_sum_f64. All ranks must select the same algorithm.
+ */
+cc_status_t cc_all_reduce_sum_f64_with_algorithm(
+    cc_communicator_t* comm, size_t rank, const double* sendbuf, double* recvbuf,
+    size_t count, cc_all_reduce_algorithm_t algorithm);
 
 /** Destroy a communicator after all threads have stopped using it. Null is OK. */
 void cc_communicator_destroy(cc_communicator_t* comm);

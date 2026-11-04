@@ -6,7 +6,8 @@
 #include <vector>
 
 namespace {
-int run_sum_test(std::size_t participants, std::size_t count, bool in_place) {
+int run_sum_test(std::size_t participants, std::size_t count, bool in_place,
+                 cc_all_reduce_algorithm_t algorithm) {
     cc_communicator_t* comm = nullptr;
     if (cc_communicator_create(participants, &comm) != CC_STATUS_OK) {
         std::cerr << "communicator creation failed\n";
@@ -26,8 +27,13 @@ int run_sum_test(std::size_t participants, std::size_t count, bool in_place) {
     for (std::size_t rank = 0; rank < participants; ++rank) {
         workers.emplace_back([&, rank] {
             double* output = in_place ? inputs[rank].data() : outputs[rank].data();
-            statuses[rank] = cc_all_reduce_sum_f64(
-                comm, rank, inputs[rank].data(), output, count);
+            if (algorithm == CC_ALL_REDUCE_ALGORITHM_BASELINE) {
+                statuses[rank] = cc_all_reduce_sum_f64(
+                    comm, rank, inputs[rank].data(), output, count);
+            } else {
+                statuses[rank] = cc_all_reduce_sum_f64_with_algorithm(
+                    comm, rank, inputs[rank].data(), output, count, algorithm);
+            }
         });
     }
     for (auto& worker : workers) {
@@ -83,15 +89,41 @@ int run_invalid_argument_test(bool count_mismatch) {
     }
     return 0;
 }
+
+int run_mixed_algorithm_test() {
+    cc_communicator_t* comm = nullptr;
+    if (cc_communicator_create(2, &comm) != CC_STATUS_OK) return 1;
+    double input[2] = {1.0, 2.0};
+    double output[2] = {};
+    cc_status_t statuses[2] = {CC_STATUS_INTERNAL_ERROR, CC_STATUS_INTERNAL_ERROR};
+    std::thread first([&] {
+        statuses[0] = cc_all_reduce_sum_f64_with_algorithm(
+            comm, 0, input, output, 2, CC_ALL_REDUCE_ALGORITHM_BASELINE);
+    });
+    std::thread second([&] {
+        statuses[1] = cc_all_reduce_sum_f64_with_algorithm(
+            comm, 1, input, output, 2, CC_ALL_REDUCE_ALGORITHM_PARALLEL);
+    });
+    first.join();
+    second.join();
+    cc_communicator_destroy(comm);
+    return statuses[0] == CC_STATUS_INVALID_ARGUMENT &&
+                   statuses[1] == CC_STATUS_INVALID_ARGUMENT ? 0 : 1;
+}
 } // namespace
 
 int main() {
-    if (run_sum_test(1, 0, false) != 0 ||
-        run_sum_test(2, 1, false) != 0 ||
-        run_sum_test(4, 257, false) != 0 ||
-        run_sum_test(3, 17, true) != 0 ||
+    if (run_sum_test(1, 0, false, CC_ALL_REDUCE_ALGORITHM_BASELINE) != 0 ||
+        run_sum_test(2, 1, false, CC_ALL_REDUCE_ALGORITHM_BASELINE) != 0 ||
+        run_sum_test(4, 257, false, CC_ALL_REDUCE_ALGORITHM_BASELINE) != 0 ||
+        run_sum_test(3, 17, true, CC_ALL_REDUCE_ALGORITHM_BASELINE) != 0 ||
+        run_sum_test(1, 0, false, CC_ALL_REDUCE_ALGORITHM_PARALLEL) != 0 ||
+        run_sum_test(2, 1, false, CC_ALL_REDUCE_ALGORITHM_PARALLEL) != 0 ||
+        run_sum_test(4, 257, false, CC_ALL_REDUCE_ALGORITHM_PARALLEL) != 0 ||
+        run_sum_test(3, 17, true, CC_ALL_REDUCE_ALGORITHM_PARALLEL) != 0 ||
         run_invalid_argument_test(false) != 0 ||
-        run_invalid_argument_test(true) != 0) {
+        run_invalid_argument_test(true) != 0 ||
+        run_mixed_algorithm_test() != 0) {
         return 1;
     }
     return 0;

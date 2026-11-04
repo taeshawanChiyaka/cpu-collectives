@@ -10,7 +10,7 @@ This is experimental software, not a drop-in replacement for NCCL. No performanc
 
 ![Reported benchmark latency](docs/images/benchmark-latency.svg)
 
-The benchmark chart shows contributor-reported measurements for a specific machine and workload. See [benchmark results and caveats](docs/benchmark-results.md) before drawing conclusions.
+The benchmark chart shows contributor-reported measurements for a specific machine and workload. See [benchmark methodology and caveats](docs/benchmarks.md) before drawing conclusions.
 
 ## Current scope
 

@@ -13,7 +13,7 @@ This is an experimental project, not a drop-in replacement for NCCL. No performa
 
 Other collectives, additional datatypes, multi-process communication, and architecture-specific kernels are not implemented yet.
 
-## Build
+## Build and test
 
 Requires CMake 3.20+ and a C++20-capable compiler.
 
@@ -23,19 +23,27 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
-Run the example:
+Run the barrier example:
 
 ```sh
 ./build/examples/hello_barrier
 ```
 
-Run the barrier benchmark (arguments: participant count, iterations):
+## Benchmarks
+
+Barrier (participants, iterations):
 
 ```sh
 ./build/benchmarks/bench_barrier 4 100000
 ```
 
-Enable AddressSanitizer and UndefinedBehaviorSanitizer on supported Clang/GCC toolchains with `-DCC_ENABLE_SANITIZERS=ON`. Sanitizers are for correctness checking, not performance measurement.
+All-reduce (participants, double elements, iterations, trials):
+
+```sh
+./build/benchmarks/bench_all_reduce 4 4096 1000 5
+```
+
+See [docs/benchmarks.md](docs/benchmarks.md) for the output interpretation and measurement guidance. Enable AddressSanitizer and UndefinedBehaviorSanitizer on supported Clang/GCC toolchains with `-DCC_ENABLE_SANITIZERS=ON`; sanitizers are for correctness checking, not performance measurement.
 
 ## Quick API sketch
 
@@ -55,4 +63,4 @@ if (cc_communicator_create(2, &comm) == CC_STATUS_OK) {
 }
 ```
 
-See [docs/api.md](docs/api.md) for API contracts, [docs/architecture.md](docs/architecture.md) for design boundaries, [docs/benchmarks.md](docs/benchmarks.md) for measurement guidance, and [docs/porting.md](docs/porting.md) for platform notes.
+See [docs/api.md](docs/api.md) for API contracts, [docs/architecture.md](docs/architecture.md) for design boundaries, and [docs/porting.md](docs/porting.md) for platform notes.

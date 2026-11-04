@@ -1,17 +1,29 @@
 # Benchmarking
 
-`bench_barrier` is a small microbenchmark, not a complete performance characterization. It reports elapsed time and average time per barrier round for a fixed number of participating threads.
-
-Build in Release mode and run, for example:
+The microbenchmarks are not a complete performance characterization. Build an optimized configuration and run the correctness tests before measuring:
 
 ```sh
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
+ctest --test-dir build --output-on-failure
+```
+
+## Barrier
+
+```sh
 ./build/benchmarks/bench_barrier 4 100000
 ```
 
-Arguments are optional: participant count defaults to 2 and iteration count defaults to 10000. Both must be positive integers. The reported average is wall-clock elapsed time divided by the iteration count; it includes thread scheduling and wake-up costs.
+The arguments are participant count and iterations.
 
-For meaningful comparisons, record the exact CPU model, OS version, compiler and version, CMake build type, participant count, iteration count, and whether the machine was under load. Run multiple trials, report distributions rather than only the best result, and compare against a simple baseline. Do not compare sanitizer builds to optimized builds. Avoid pinning workers or changing power settings unless those conditions are documented and reproducible.
+## All-reduce
 
-Future benchmarks should cover collectives and payload sizes, separating setup from steady-state work. No benchmark result should be generalized across hardware without evidence.
+```sh
+./build/benchmarks/bench_all_reduce 4 4096 1000 5
+```
+
+Arguments are `[participants] [elements] [iterations] [trials]`. Defaults are 2 participants, 1024 double elements, 1000 measured collectives, and 5 trials. Each worker performs up to 100 warmup collectives before timing; thread creation is excluded from the reported interval. The benchmark validates the final output of every rank after each trial and exits with an error if results are wrong.
+
+Each trial reports elapsed time, average microseconds per all-reduce, and input MiB/s per rank. The throughput number is the per-rank input payload divided by collective latency; it is not aggregate system bandwidth and should not be compared directly with vendor-library bandwidth figures. Payload bytes per rank are `elements * sizeof(double)`.
+
+For meaningful comparisons, record the exact CPU model, OS version, compiler and version, build type, participant count, payload size, iteration count, and whether the machine was under load. Run multiple trials and report the distribution (for example median and range), not only the best result. Avoid sanitizer builds for performance measurements. This initial all-reduce implementation is a simple rank-0 reduction baseline; results are for characterization, not a performance claim.

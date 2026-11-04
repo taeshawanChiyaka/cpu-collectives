@@ -32,6 +32,10 @@ cmake --build build --parallel
 ctest --test-dir build --output-on-failure
 ```
 
+### Latest recorded test results
+
+**5/5 tests passed** in a local Debug build (2.44 seconds total). This recorded run used Apple Clang 21.0.0 on macOS 27.2, with sanitizers disabled. See the [full test report](docs/test-results.md) for the tested revision and details. This is a contributor-reported local result, not a live CI status badge; results may differ on other systems or revisions.
+
 ## Benchmarks
 
 All-reduce (participants, double elements, iterations, trials). This compares baseline and parallel variants in every trial:

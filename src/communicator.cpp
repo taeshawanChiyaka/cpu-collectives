@@ -47,6 +47,28 @@ extern "C" cc_status_t cc_barrier(cc_communicator_t* comm, size_t rank) {
     }
 }
 
+extern "C" cc_status_t cc_all_reduce_sum_f64(cc_communicator_t* comm, size_t rank,
+                                               const double* sendbuf, double* recvbuf,
+                                               size_t count) {
+    if (comm == nullptr || rank >= comm->implementation.size()) {
+        return CC_STATUS_INVALID_ARGUMENT;
+    }
+
+    try {
+        switch (comm->implementation.all_reduce_sum_f64(rank, sendbuf, recvbuf, count)) {
+        case cpu_collectives::internal::CollectiveResult::success:
+            return CC_STATUS_OK;
+        case cpu_collectives::internal::CollectiveResult::invalid_argument:
+            return CC_STATUS_INVALID_ARGUMENT;
+        case cpu_collectives::internal::CollectiveResult::out_of_memory:
+            return CC_STATUS_OUT_OF_MEMORY;
+        }
+    } catch (...) {
+        return CC_STATUS_INTERNAL_ERROR;
+    }
+    return CC_STATUS_INTERNAL_ERROR;
+}
+
 extern "C" void cc_communicator_destroy(cc_communicator_t* comm) {
     delete comm;
 }

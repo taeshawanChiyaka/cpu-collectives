@@ -10,6 +10,11 @@ add_executable(test_barrier test_barrier.cpp)
 target_link_libraries(test_barrier PRIVATE cpu_collectives::cpu_collectives)
 add_test(NAME barrier COMMAND test_barrier)
 
+add_executable(test_all_reduce test_all_reduce.cpp)
+target_link_libraries(test_all_reduce PRIVATE cpu_collectives::cpu_collectives)
+add_test(NAME all_reduce COMMAND test_all_reduce)
+set_tests_properties(all_reduce PROPERTIES TIMEOUT 30)
+
 add_executable(stress_barrier stress/stress_barrier.cpp)
 target_link_libraries(stress_barrier PRIVATE cpu_collectives::cpu_collectives)
 add_test(NAME stress_barrier COMMAND stress_barrier)

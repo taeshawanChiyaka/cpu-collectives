@@ -33,6 +33,23 @@ size_t cc_communicator_size(const cc_communicator_t* comm);
  */
 cc_status_t cc_barrier(cc_communicator_t* comm, size_t rank);
 
+/**
+ * Sum `count` double values across all communicator participants and write
+ * the complete sum to each participant's recvbuf. Every rank must call this
+ * operation in the same order with the same count. Ranks must be unique and
+ * in range. For count > 0, sendbuf and recvbuf must be non-null; for count == 0
+ * they may be null. sendbuf and recvbuf may overlap, including being identical.
+ *
+ * If a rank-valid participant supplies a null buffer or participants disagree
+ * on count, all participants return CC_STATUS_INVALID_ARGUMENT. If scratch
+ * allocation fails, all participants return CC_STATUS_OUT_OF_MEMORY. As with
+ * all collectives, every participant must enter the operation; a missing or
+ * duplicate rank can leave peers waiting.
+ */
+cc_status_t cc_all_reduce_sum_f64(cc_communicator_t* comm, size_t rank,
+                                  const double* sendbuf, double* recvbuf,
+                                  size_t count);
+
 /** Destroy a communicator after all threads have stopped using it. Null is OK. */
 void cc_communicator_destroy(cc_communicator_t* comm);
 

@@ -69,14 +69,15 @@ int run_invalid_argument_test(bool count_mismatch) {
         return 1;
     }
     double input = 1.0;
-    double output = 0.0;
+    double outputs[participants] = {};
     cc_status_t statuses[participants] = {CC_STATUS_INTERNAL_ERROR, CC_STATUS_INTERNAL_ERROR};
     std::thread first([&] {
-        statuses[0] = cc_all_reduce_sum_f64(comm, 0, &input, &output, 1);
+        const double* first_input = count_mismatch ? &input : nullptr;
+        statuses[0] = cc_all_reduce_sum_f64(comm, 0, first_input, &outputs[0], 1);
     });
     std::thread second([&] {
         statuses[1] = cc_all_reduce_sum_f64(
-            comm, 1, &input, &output, count_mismatch ? 2 : 1);
+            comm, 1, &input, &outputs[1], count_mismatch ? 2 : 1);
     });
     first.join();
     second.join();
@@ -94,15 +95,15 @@ int run_mixed_algorithm_test() {
     cc_communicator_t* comm = nullptr;
     if (cc_communicator_create(2, &comm) != CC_STATUS_OK) return 1;
     double input[2] = {1.0, 2.0};
-    double output[2] = {};
+    double outputs[2][2] = {};
     cc_status_t statuses[2] = {CC_STATUS_INTERNAL_ERROR, CC_STATUS_INTERNAL_ERROR};
     std::thread first([&] {
         statuses[0] = cc_all_reduce_sum_f64_with_algorithm(
-            comm, 0, input, output, 2, CC_ALL_REDUCE_ALGORITHM_BASELINE);
+            comm, 0, input, outputs[0], 2, CC_ALL_REDUCE_ALGORITHM_BASELINE);
     });
     std::thread second([&] {
         statuses[1] = cc_all_reduce_sum_f64_with_algorithm(
-            comm, 1, input, output, 2, CC_ALL_REDUCE_ALGORITHM_PARALLEL);
+            comm, 1, input, outputs[1], 2, CC_ALL_REDUCE_ALGORITHM_PARALLEL);
     });
     first.join();
     second.join();
